@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-const initialSupply = 10000;
+const initialSupply = 1000;
 
 async function main() {
   const RamaTokenFactory = await ethers.getContractFactory("RamaToken");

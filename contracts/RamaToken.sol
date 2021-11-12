@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
+import "./FilmOwners.sol";
 
 contract RamaToken is ERC20 {
     address public owner;
-    using EnumerableSet for EnumerableSet.AddressSet;
-    EnumerableSet.AddressSet private filmOwners;
+    FilmOwners private filmOwners = new FilmOwners();
 
     constructor(uint256 initialSupply) ERC20("Picturama", "RAMA") {
         _mint(msg.sender, initialSupply);
@@ -24,7 +24,7 @@ contract RamaToken is ERC20 {
         filmOwners.add(newOwner);
     }
 
-    function isOwnerAdded(address ownerAddress) public view returns (bool) {
-        return filmOwners.contains(ownerAddress);
+    function isFilmOwnerAdded(address ownerAddress) public view returns (bool) {
+        return filmOwners.isAdded(ownerAddress);
     }
 }
