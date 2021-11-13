@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 
 contract FilmOwnerProjects {
     address public owner;
@@ -79,13 +80,13 @@ contract FilmOwnerProjects {
 
     function getAllProjects() public view returns (FilmData[] memory) {
         FilmData[] memory filmDataList = new FilmData[](filmCount);
-        for (uint256 i = 0; i < filmCount; i++) {
+        for (uint256 i = 1; i <= filmCount; i++) {
             FilmData memory filmData = FilmData(
                 filmIdToDetailsMapping[i].targetAmount,
                 0,
                 0
             );
-            filmDataList[i] = filmData;
+            filmDataList[i - 1] = filmData;
         }
         return filmDataList;
     }
