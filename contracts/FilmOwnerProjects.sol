@@ -22,6 +22,7 @@ contract FilmOwnerProjects {
     struct FilmFundingDetails {
         uint256 targetAmount;
         mapping(address => uint256) funderAddressToAmountMapping;
+        address[] funders;
     }
 
     struct FilmData {
@@ -37,7 +38,7 @@ contract FilmOwnerProjects {
     function addFilm(address filmOwnerAddress, uint256 fundingGoal) public {
         require(owner == msg.sender, "Unauthorised request");
 
-        if (!doesOwnerAddressExist(filmOwnerAddress)) {
+        if (!doesItemExist(filmOwnerAddress, filmOwners)) {
             addFilmOwner(filmOwnerAddress);
         }
 
@@ -53,19 +54,19 @@ contract FilmOwnerProjects {
 
     // Add a new new film owner to the film owners list
     function addFilmOwner(address filmOwnerAddress) private {
-        if (doesOwnerAddressExist(filmOwnerAddress)) {
+        if (doesItemExist(filmOwnerAddress, filmOwners)) {
             filmOwnerToFilmIdsMapping[filmOwnerAddress] = new uint256[](100);
         }
     }
 
     // Checks if the film owner is already present in the platform
-    function doesOwnerAddressExist(address funderAddress)
+    function doesItemExist(address item, address[] memory items)
         private
-        view
+        pure
         returns (bool)
     {
-        for (uint256 i = 0; i < filmOwners.length; i += 1) {
-            if (filmOwners[i] == funderAddress) {
+        for (uint256 i = 0; i < items.length; i += 1) {
+            if (items[i] == item) {
                 return true;
             }
         }
@@ -85,11 +86,47 @@ contract FilmOwnerProjects {
         for (uint256 id = 1; id <= filmCount; id++) {
             FilmData memory filmData = FilmData(
                 filmIdToDetailsMapping[id].targetAmount,
-                0,
+                getTotalFundedAmount(id),
                 id
             );
             filmDataList[id - 1] = filmData;
         }
         return filmDataList;
+    }
+
+    function fundFilm(uint256 id) public payable {
+        require(id <= filmCount && id >= 0, "Invalid film id");
+
+        if (!doesItemExist(msg.sender, filmIdToDetailsMapping[id].funders)) {
+            filmIdToDetailsMapping[id].funders.push(msg.sender);
+        }
+
+        require(
+            getTotalFundedAmount(id) + msg.value <
+                filmIdToDetailsMapping[id].targetAmount,
+            "Excess fund"
+        );
+
+        filmIdToDetailsMapping[id].funderAddressToAmountMapping[msg.sender] =
+            filmIdToDetailsMapping[id].funderAddressToAmountMapping[
+                msg.sender
+            ] +
+            msg.value;
+    }
+
+    function getTotalFundedAmount(uint256 id) public view returns (uint256) {
+        uint256 totalFunded;
+        for (
+            uint256 i = 0;
+            i < filmIdToDetailsMapping[id].funders.length;
+            i++
+        ) {
+            totalFunded =
+                totalFunded +
+                filmIdToDetailsMapping[id].funderAddressToAmountMapping[
+                    filmIdToDetailsMapping[id].funders[i]
+                ];
+        }
+        return totalFunded;
     }
 }

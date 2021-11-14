@@ -29,4 +29,40 @@ describe("Film ownership tests", function () {
       ramaTokenContract.connect(addr1).addFilm(addr1.address, 1000)
     ).to.be.revertedWith("Unauthorised request");
   });
+
+  it("tests funding of a film", async function () {
+    const [owner, addr1] = await ethers.getSigners();
+
+    const RamaTokenFactory = await ethers.getContractFactory("RamaToken");
+    const ramaTokenContract = await RamaTokenFactory.deploy(initialSupply);
+
+    ramaTokenContract.connect(owner).addFilm(addr1.address, 1000);
+
+    ramaTokenContract.fundFilm(1, {
+      value: 100,
+    });
+
+    const res = await ramaTokenContract.getAllProjects();
+
+    expect(res[0].toString()).to.eq("1000,100,1");
+  });
+
+  it("tests over funding of a film", async function () {
+    const [owner, addr1] = await ethers.getSigners();
+
+    const RamaTokenFactory = await ethers.getContractFactory("RamaToken");
+    const ramaTokenContract = await RamaTokenFactory.deploy(initialSupply);
+
+    ramaTokenContract.connect(owner).addFilm(addr1.address, 1000);
+
+    ramaTokenContract.fundFilm(1, {
+      value: 100,
+    });
+
+    await expect(
+      ramaTokenContract.connect(addr1).fundFilm(1, {
+        value: 1000,
+      })
+    ).to.be.revertedWith("Excess fund");
+  });
 });
