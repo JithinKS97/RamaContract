@@ -35,6 +35,8 @@ contract FilmOwnerProjects {
 
     // Adds a new film to the platform
     function addFilm(address filmOwnerAddress, uint256 fundingGoal) public {
+        require(owner == msg.sender, "Unauthorised request");
+
         if (!doesOwnerAddressExist(filmOwnerAddress)) {
             addFilmOwner(filmOwnerAddress);
         }
@@ -80,13 +82,13 @@ contract FilmOwnerProjects {
 
     function getAllProjects() public view returns (FilmData[] memory) {
         FilmData[] memory filmDataList = new FilmData[](filmCount);
-        for (uint256 i = 1; i <= filmCount; i++) {
+        for (uint256 id = 1; id <= filmCount; id++) {
             FilmData memory filmData = FilmData(
-                filmIdToDetailsMapping[i].targetAmount,
+                filmIdToDetailsMapping[id].targetAmount,
                 0,
-                0
+                id
             );
-            filmDataList[i - 1] = filmData;
+            filmDataList[id - 1] = filmData;
         }
         return filmDataList;
     }
